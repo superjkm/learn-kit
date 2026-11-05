@@ -1,13 +1,16 @@
 import AppKit
 import LearnKit
+import os
 
 /// Plays the short bundled sound cues. Silent when muted.
 @MainActor public final class SoundPlayer {
     public static let shared = SoundPlayer()
 
-    public enum Cue: String, Sendable { case tick, burst, run, finish }
+    public enum Cue: String, Sendable, CaseIterable { case tick, burst, run, finish }
 
     private var cache: [Cue: NSSound] = [:]
+    /// Cues that failed to load; logged once, not retried.
+    private var failed: Set<Cue> = []
 
     private init() {}
 
@@ -28,11 +31,22 @@ import LearnKit
         }
     }
 
+    /// Where a cue's WAV lives in the package bundle.
+    static func url(for cue: Cue) -> URL? {
+        Bundle.module.url(forResource: cue.rawValue, withExtension: "wav")
+    }
+
     private func sound(for cue: Cue) -> NSSound? {
         if let cached = cache[cue] { return cached }
-        guard let url = Bundle.module.url(forResource: cue.rawValue, withExtension: "wav"),
+        if failed.contains(cue) { return nil }
+        guard let url = Self.url(for: cue),
               let sound = NSSound(contentsOf: url, byReference: true)
-        else { return nil }
+        else {
+            failed.insert(cue)
+            Logger(subsystem: AppIdentity.current.bundleID, category: "Sound")
+                .error("Could not load sound cue \(cue.rawValue, privacy: .public)")
+            return nil
+        }
         cache[cue] = sound
         return sound
     }
