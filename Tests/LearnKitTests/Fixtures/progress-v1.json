@@ -1,1 +1,29 @@
-{"version": 1}
+{
+  "version" : 1,
+  "name" : "Sam",
+  "practice" : {
+    "practiceDays" : [9101, 9102],
+    "bestStreak" : 2
+  },
+  "cards" : {
+    "their" : {
+      "correctCount" : 1,
+      "dueDay" : 9105,
+      "easySinceLapse" : false,
+      "lapses" : 0,
+      "lastAnswerCorrect" : true,
+      "lastReviewDay" : 9102,
+      "memory" : {
+        "difficulty" : 5.2824,
+        "stability" : 3.173
+      },
+      "reviewCount" : 1
+    },
+    "there" : {
+      "correctCount" : 0,
+      "easySinceLapse" : false,
+      "lapses" : 0,
+      "reviewCount" : 0
+    }
+  }
+}
