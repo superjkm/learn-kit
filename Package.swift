@@ -6,10 +6,13 @@ let package = Package(
     platforms: [.macOS(.v14)],
     products: [
         .library(name: "LearnKit", targets: ["LearnKit"]),
+        .library(name: "LearnKitUI", targets: ["LearnKitUI"]),
     ],
     targets: [
         .target(name: "LearnKit"),
-        .testTarget(name: "LearnKitTests", dependencies: ["LearnKit"],
+        .target(name: "LearnKitUI", dependencies: ["LearnKit"],
+                resources: [.process("Resources/Sounds")]),
+        .testTarget(name: "LearnKitTests", dependencies: ["LearnKit", "LearnKitUI"],
                     resources: [.copy("Fixtures/progress-v1.json")]),
     ],
     swiftLanguageModes: [.v6]
