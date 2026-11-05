@@ -131,7 +131,7 @@ public struct Rays: View {
 
     public var body: some View {
         ZStack {
-            ForEach(0..<count, id: \.self) { i in
+            ForEach(0..<(colors.isEmpty ? 0 : max(count, 0)), id: \.self) { i in
                 let degrees = Double(i) * 360 / Double(count) + 8
                 let angle = degrees * .pi / 180
                 Capsule()

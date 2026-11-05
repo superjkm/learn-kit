@@ -55,7 +55,7 @@ public struct VoiceCandidate: Equatable, Sendable {
     public func stop() {
         currentUtterance = nil
         currentUtteranceRef = nil
-        if synthesizer.isSpeaking { synthesizer.stopSpeaking(at: .immediate) }
+        synthesizer.stopSpeaking(at: .immediate)
         isSpeaking = false
     }
 

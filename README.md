@@ -50,6 +50,7 @@ embed a `PracticeLog` and a `[String: Card]`, and store it with
 Voice: `SharedRecognizer.probe(reason:)` at launch and on activation, classified by
 `VoiceReadiness.classify`; `HoldToTalkTranscriber(contextualStrings:)` for hold-to-talk with
 `SpaceKeyMonitor` driving `beginHold()` / `endHold(keyUpAt:)`; `Speaker` to say prompts.
+Call `start()` when a prompt is up and `stop(keepingMicrophone: true)` when it is covered (sheet, summary); `stop(keepingMicrophone: false)` when leaving practice; `retry()` after `.unavailable` or `.denied`. Nothing is delivered before `start()`.
 The voice log is opt-in (`VoiceLog.shared.setEnabled(_:mode:)`) and lands in
 `~/Library/Logs/<logFolder>/voice.log`.
 
@@ -63,7 +64,7 @@ swift build
 ## Lessons carried over from Mathy Math
 
 - Recognizer result handlers run on `SharedRecognizer.recognitionQueue`, never the main queue.
-- A hold's request is closed on the next audio buffer after key-up, with no tail, and only that
+- A hold's request is detached at key-up, so the next buffer reaches no request, with no tail, and only that
   request's results decide the text.
 - Every ended recognition request is logged with its error domain, code and description.
   `kAFAssistantErrorDomain 1110` ("No speech detected") means the recognizer is ready.

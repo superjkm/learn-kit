@@ -352,10 +352,19 @@ import Speech
 
     /// Checks permissions and starts the microphone with no request, filling only the replay
     /// buffer. If the key went down meanwhile, opens the hold's request.
+    ///
+    /// An engine that exists but is no longer running (AVAudioEngine stops itself on an audio
+    /// device change such as a headset connecting) is torn down and recreated rather than
+    /// restarted with `start()`, because the input format may have changed and the tap must be
+    /// installed in the current one. This path is not unit-testable without audio hardware.
     private func warmUp(_ id: Int) async {
         // Not tied to the session: a hold that ends meanwhile should still leave the
         // microphone warm for the next press.
         guard let recognizer = await prepare() else { return }
+        if let engine, !engine.isRunning {
+            trace("engine stopped: restarting")
+            shutDownAudio()
+        }
         if engine == nil {
             let engine = AVAudioEngine()
             let input = engine.inputNode
@@ -397,7 +406,12 @@ import Speech
     /// The spare request if there is one, else a new one.
     private func takeRequest() -> SFSpeechAudioBufferRecognitionRequest {
         defer { spareRequest = nil }
-        return spareRequest ?? Self.makeRequest(contextualStrings: contextualStrings)
+        if let spare = spareRequest {
+            // Still settable: the task has not started, so a change since it was prepared lands now.
+            spare.contextualStrings = contextualStrings
+            return spare
+        }
+        return Self.makeRequest(contextualStrings: contextualStrings)
     }
 
     /// Makes the next press's request now, while nothing is waiting on it.
