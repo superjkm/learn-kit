@@ -32,7 +32,7 @@ import os
     }
 
     /// Where a cue's WAV lives in the package bundle.
-    static func url(for cue: Cue) -> URL? {
+    nonisolated static func url(for cue: Cue) -> URL? {
         Bundle.module.url(forResource: cue.rawValue, withExtension: "wav")
     }
 
