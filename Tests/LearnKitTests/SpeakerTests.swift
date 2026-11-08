@@ -77,3 +77,12 @@ private func voice(_ id: String, _ language: String, _ quality: Int) -> VoiceCan
     speaker.utteranceEnded(ObjectIdentifier(utterance), cancelled: false)
     #expect(finished == 0)
 }
+
+@MainActor @Test func utteranceHasLeadInSoTheFirstPhonemeIsNotClipped() {
+    let speaker = Speaker()
+    let utterance = speaker.makeUtterance("no. No, thank you. no.", rate: 0.4)
+    #expect(utterance.preUtteranceDelay == Speaker.leadIn)
+    #expect(Speaker.leadIn == 0.3)
+    #expect(utterance.rate == 0.4)
+    #expect(utterance.speechString == "no. No, thank you. no.")
+}

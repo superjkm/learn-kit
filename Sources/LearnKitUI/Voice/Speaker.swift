@@ -20,6 +20,8 @@ public struct VoiceCandidate: Equatable, Sendable {
 /// when an utterance ends on its own; `stop()` cuts it silently.
 @MainActor @Observable public final class Speaker {
     nonisolated public static let defaultRate: Float = 0.45
+    /// Silence before the first phoneme, so the engine is running and a short opening word is not clipped.
+    nonisolated(unsafe) public static var leadIn: TimeInterval = 0.3
 
     public private(set) var isSpeaking = false
     @ObservationIgnored public var onFinished: (() -> Void)?
@@ -45,11 +47,18 @@ public struct VoiceCandidate: Equatable, Sendable {
     /// Speaks `text`, cutting off anything still being said.
     public func speak(_ text: String, rate: Float = Speaker.defaultRate) {
         stop()
+        let utterance = makeUtterance(text, rate: rate)
+        track(utterance)
+        synthesizer.speak(utterance)
+    }
+
+    /// Builds the utterance `speak` hands to the synthesizer. Internal so tests can inspect it without speaking.
+    func makeUtterance(_ text: String, rate: Float) -> AVSpeechUtterance {
         let utterance = AVSpeechUtterance(string: text)
         utterance.rate = rate
         utterance.voice = voice
-        track(utterance)
-        synthesizer.speak(utterance)
+        utterance.preUtteranceDelay = Self.leadIn
+        return utterance
     }
 
     public func stop() {
