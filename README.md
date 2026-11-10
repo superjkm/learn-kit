@@ -25,11 +25,14 @@ macOS 14, Xcode 16 or newer (Swift 6 toolchain), swift-tools 6.0.
 
 ```swift
 // Package.swift of the app
-.package(url: "https://github.com/superjkm/learn-kit.git", branch: "main")
+.package(url: "https://github.com/superjkm/learn-kit.git", from: "0.1.0")
 // target dependencies
 .product(name: "LearnKit", package: "learn-kit"),
 .product(name: "LearnKitUI", package: "learn-kit"),
 ```
+
+Apps pin a released version (`from: "0.1.0"`), not `branch: "main"`, so a change here reaches an
+app only when it raises its version and re-resolves. See `CHANGELOG.md` for what each version holds.
 
 At launch, before any voice or sound type is touched:
 
@@ -60,6 +63,21 @@ The voice log is opt-in (`VoiceLog.shared.setEnabled(_:mode:)`) and lands in
 swift test
 swift build
 ```
+
+## Releasing
+
+1. Merge the change to `main` and make sure `swift build` and `swift test` pass.
+2. Add a `CHANGELOG.md` entry for the new version. Use a patch bump for fixes and a minor bump
+   for new API (while the major version is 0, a minor bump may also break API).
+3. Tag the merge commit and push the tag:
+
+   ```sh
+   git tag -a 0.1.1 -m 'LearnKit 0.1.1' <merge sha>
+   git push origin 0.1.1
+   ```
+
+4. In each app, raise `from:` in its `Package.swift` or `project.yml`, re-resolve packages and
+   commit `Package.resolved`.
 
 ## Lessons carried over from Mathy Math
 
