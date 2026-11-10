@@ -66,13 +66,14 @@ swift build
 
 ## Releasing
 
-1. Merge the change to `main` and make sure `swift build` and `swift test` pass.
-2. Add a `CHANGELOG.md` entry for the new version. Use a patch bump for fixes and a minor bump
-   for new API (while the major version is 0, a minor bump may also break API).
-3. Tag the merge commit and push the tag:
+1. Add a `CHANGELOG.md` entry for the new version in the change that ships it. Use a patch
+   bump for fixes and a minor bump for new API (while the major version is 0, a minor bump may
+   also break API).
+2. Make sure `swift build` and `swift test` pass, then merge to `main`.
+3. Tag the merge commit (it contains the entry) and push the tag:
 
    ```sh
-   git tag -a 0.1.1 -m 'LearnKit 0.1.1' <merge sha>
+   git tag -a 0.1.1 -m 'LearnKit 0.1.1' <merge sha>   # git rev-parse origin/main
    git push origin 0.1.1
    ```
 

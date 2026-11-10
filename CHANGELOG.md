@@ -22,7 +22,7 @@ First tagged release.
 
 - `Speaker` adds a 0.3 s lead-in so short opening words are not clipped.
 
-### Fixed
+### Included fixes
 
 - A stopped audio engine (for example after a device change) is torn down and recreated on
   warm-up instead of staying dead.
