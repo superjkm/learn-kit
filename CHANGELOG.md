@@ -3,6 +3,27 @@
 All notable changes to LearnKit. Versions are git tags (`0.1.0`, `0.1.1`, ...) and follow
 semantic versioning; while the major version is 0, a minor bump may change public API.
 
+## 0.2.0
+
+Brings LearnKit level with Mathy Math 0.2.6 so Mathy Math can migrate. Source-compatible
+with 0.1.0 callers: Spelly Spell builds and tests unchanged.
+
+### Added
+
+- Flame-tier day marks: `Streak.DayMark` gains `.flame` (a day that reached the goal) and
+  `.doubled` (twice the goal). `Streak.strip(practiceDays:halfDays:fullDays:today:length:)`
+  takes the two flame sets as defaulted arguments, so `strip(practiceDays:today:)` is
+  unchanged. `DayStripView` draws one or two flame glyphs on those days.
+- `VoicedTime` in `LearnKit`: voiced time that counts speech with its small gaps and never
+  counts silence.
+
+### Changed
+
+- `AudioFeed` tracks voiced time: `voicedTotal` sits next to `lastVoicedAt`, both read from one
+  `VoicedTime` under the same lock.
+- `Streak.DayMark` has two more cases, so an exhaustive `switch` over it must handle
+  `.flame` and `.doubled`. Spelly Spell has none.
+
 ## 0.1.0
 
 First tagged release.
