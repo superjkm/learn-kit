@@ -1,7 +1,8 @@
 import LearnKit
 import SwiftUI
 
-/// The last 14 days, oldest first; the final square is today.
+/// The last 14 days, oldest first; the final square is today. A day that reaches the goal carries
+/// a small flame, one at double the goal two; today shows the same once earned, else the dotted square.
 public struct DayStripView: View {
     public let marks: [Streak.DayMark]
     @Environment(\.palette) private var palette
@@ -24,8 +25,12 @@ public struct DayStripView: View {
     private func square(for mark: Streak.DayMark) -> some View {
         let shape = RoundedRectangle(cornerRadius: 8)
         switch mark {
-        case .practiced, .flame, .doubled:
+        case .practiced:
             shape.fill(palette.accent)
+        case .flame:
+            shape.fill(palette.accent).overlay(flames(1))
+        case .doubled:
+            shape.fill(palette.accent).overlay(flames(2))
         case .forgiven:
             shape.fill(palette.accent.opacity(0.35))
         case .missed:
@@ -34,5 +39,15 @@ public struct DayStripView: View {
             shape.fill(palette.sand)
                 .overlay(shape.strokeBorder(palette.accent, style: StrokeStyle(lineWidth: 2.5, dash: [4, 3])))
         }
+    }
+
+    private func flames(_ count: Int) -> some View {
+        HStack(spacing: -3) {
+            ForEach(0..<count, id: \.self) { _ in
+                Image(systemName: "flame.fill")
+            }
+        }
+        .font(.system(size: count == 1 ? 15 : 12, weight: .bold))
+        .foregroundStyle(.white)
     }
 }
