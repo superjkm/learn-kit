@@ -16,4 +16,16 @@ private func days(_ idx: Int...) -> Set<PracticeDay> { Set(idx.map { PracticeDay
 }
 @Test func stripMarksMissedOutsideStreak() { let s = Streak.strip(practiceDays: days(13), today: PracticeDay(index: 14), length: 3); #expect(s == [.missed, .practiced, .today]) }
 @Test func stripOfLengthZeroIsEmpty() { #expect(Streak.strip(practiceDays: days(13), today: PracticeDay(index: 14), length: 0) == []) }
+@Test func stripMarksFlameAndDoubledDays() {
+    let s = Streak.strip(practiceDays: days(11,12,13), halfDays: days(12,13), fullDays: days(13), today: PracticeDay(index: 14), length: 4)
+    #expect(s == [.practiced, .flame, .doubled, .today])
+}
+@Test func stripMarksTodayOnceEarned() {
+    #expect(Streak.strip(practiceDays: days(13,14), today: PracticeDay(index: 14), length: 2) == [.practiced, .practiced])
+    #expect(Streak.strip(practiceDays: days(13,14), halfDays: days(14), today: PracticeDay(index: 14), length: 2) == [.practiced, .flame])
+    #expect(Streak.strip(practiceDays: days(13,14), halfDays: days(14), fullDays: days(14), today: PracticeDay(index: 14), length: 2) == [.practiced, .doubled])
+}
+@Test func stripWithoutFlameSetsIsUnchanged() {
+    #expect(Streak.strip(practiceDays: days(12,14), today: PracticeDay(index: 14), length: 3) == [.practiced, .forgiven, .practiced])
+}
 @Test func flameStages() { #expect(Streak.flameStage(streak: 0) == 0); #expect(Streak.flameStage(streak: 1) == 1); #expect(Streak.flameStage(streak: 6) == 2); #expect(Streak.flameStage(streak: 7) == 3); #expect(Streak.flameStage(streak: 100) == 7) }

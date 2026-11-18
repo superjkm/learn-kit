@@ -24,7 +24,7 @@ public struct DayStripView: View {
     private func square(for mark: Streak.DayMark) -> some View {
         let shape = RoundedRectangle(cornerRadius: 8)
         switch mark {
-        case .practiced:
+        case .practiced, .flame, .doubled:
             shape.fill(palette.accent)
         case .forgiven:
             shape.fill(palette.accent.opacity(0.35))
