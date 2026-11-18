@@ -116,6 +116,36 @@ private enum Fixture {
     #expect(feed.lastVoicedAt != nil)
 }
 
+@Test func voicedTotalGrowsOnlyWithAudioAboveTheThreshold() {
+    let feed = AudioFeed(nil)
+    #expect(feed.voicedTotal == .zero)
+    Fixture.feed(feed, 0..<2, amplitude: 0.005)
+    #expect(feed.voicedTotal == .zero)
+    // A lone voiced buffer counts at least its own 0.1 s.
+    Fixture.feed(feed, 2..<3)
+    let first = feed.voicedTotal
+    #expect(first >= .milliseconds(100))
+    #expect(feed.lastVoicedAt != nil)
+    Fixture.feed(feed, 3..<4)
+    let second = feed.voicedTotal
+    #expect(second > first)
+    // Silence never counts.
+    Fixture.feed(feed, 4..<8, amplitude: 0)
+    #expect(feed.voicedTotal == second)
+}
+
+@Test func voicedTimeSurvivesSwapAndRelease() {
+    let feed = AudioFeed(nil)
+    Fixture.feed(feed, 0..<1)
+    let heard = feed.voicedTotal
+    let at = feed.lastVoicedAt
+    feed.swap(to: Fixture.request(), replay: 0.3)
+    _ = feed.release(cutoff: 0)
+    feed.clearReplay()
+    #expect(feed.voicedTotal == heard)
+    #expect(feed.lastVoicedAt == at)
+}
+
 @Test func theRingKeepsAtMostMaxReplaySeconds() {
     let feed = AudioFeed(nil)
     Fixture.feed(feed, 0..<30)
