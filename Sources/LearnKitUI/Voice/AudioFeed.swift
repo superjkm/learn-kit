@@ -1,4 +1,5 @@
 import AVFoundation
+import LearnKit
 import os
 import Speech
 
@@ -18,8 +19,9 @@ import Speech
 ///   replay running on the tap thread, and the tap thread can wait for one bounded replay that
 ///   `swap` runs on the main actor. Nobody waits for audio while holding it, so neither side
 ///   ever waits for the next buffer, and nothing is called back while it is held.
-/// - `voiced` guards only the last voiced instant. It is never held while `lock` is held, or
-///   while doing anything else, so reading it from the main actor cannot stall.
+/// - `voiced` guards only the voiced-time record (`VoicedTime`: the last voiced instant and the
+///   voiced total). It is never held while `lock` is held, or while doing anything else, so
+///   reading it from the main actor cannot stall.
 ///
 /// Invariants, under `lock`:
 /// - Once `swap` or `release` returns, the request it detached never receives another buffer,
@@ -70,7 +72,7 @@ public final class AudioFeed: @unchecked Sendable {
     /// System-uptime seconds at which each of the request's newest live buffers began.
     private var appendedStarts: [TimeInterval] = []
 
-    private let voiced = OSAllocatedUnfairLock<ContinuousClock.Instant?>(initialState: nil)
+    private let voiced = OSAllocatedUnfairLock(initialState: VoicedTime())
 
     public init(_ request: SFSpeechAudioBufferRecognitionRequest?) {
         self.request = request
@@ -78,7 +80,13 @@ public final class AudioFeed: @unchecked Sendable {
 
     /// When the tap last heard a voiced buffer; nil if it has not yet.
     public var lastVoicedAt: ContinuousClock.Instant? {
-        voiced.withLock { $0 }
+        voiced.withLock { $0.lastAt }
+    }
+
+    /// How much voice the tap has heard since this feed was made (see `VoicedTime`); a
+    /// watchdog compares two readings of it.
+    public var voicedTotal: Duration {
+        voiced.withLock { $0.total }
     }
 
     /// Audio tap thread only. `when` is the tap's time for the buffer's first sample.
@@ -86,7 +94,9 @@ public final class AudioFeed: @unchecked Sendable {
         // Work that needs no shared state happens before taking the lock.
         if Self.rms(of: buffer) > Self.voicedRMS {
             let now = ContinuousClock.now
-            voiced.withLock { $0 = now }
+            let rate = buffer.format.sampleRate
+            let length: Duration = rate > 0 ? .seconds(Double(buffer.frameLength) / rate) : .zero
+            voiced.withLock { $0.heard(at: now, length: length) }
         }
         let start = Self.uptime(of: when, frames: buffer.frameLength, rate: buffer.format.sampleRate)
         // The tap may reuse its buffer after this callback, so the ring keeps a copy.
